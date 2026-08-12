@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatVND } from "@/lib/format";
 
+export const dynamic = "force-dynamic";
+
 export default async function ShopPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const shop = await prisma.shop.findUnique({

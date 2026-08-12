@@ -1,0 +1,39 @@
+services:
+  zos-postgres:
+    image: postgres:16-alpine
+    container_name: zos-postgres
+    environment:
+      POSTGRES_USER: zoder_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: zoder_db
+    volumes:
+      - /mnt/data/ssd/zoder-pgdata:/var/lib/postgresql/data
+    ports:
+      - "5440:5432"
+    networks:
+      - homelab-net
+      - zoder-net
+    restart: unless-stopped
+
+  zoder:
+    build: .
+    image: zoder-app:latest
+    container_name: zoder-app
+    environment:
+      DATABASE_URL: postgresql://zoder_user:${POSTGRES_PASSWORD}@zos-postgres:5432/zoder_db
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: production
+    ports:
+      - "8101:3000"
+    networks:
+      - homelab-net
+      - zoder-net
+    depends_on:
+      - zos-postgres
+    restart: unless-stopped
+
+networks:
+  homelab-net:
+    external: true
+  zoder-net:
+    driver: bridge

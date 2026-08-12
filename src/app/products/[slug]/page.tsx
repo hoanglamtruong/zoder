@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { formatVND } from "@/lib/format";
 import AddToCartButton from "@/components/AddToCartButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const product = await prisma.product.findUnique({

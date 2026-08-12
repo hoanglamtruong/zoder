@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const [categories, shops] = await Promise.all([
     prisma.category.findMany({ include: { _count: { select: { shops: true } } } }),
