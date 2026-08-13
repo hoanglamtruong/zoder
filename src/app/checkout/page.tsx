@@ -19,6 +19,18 @@ export default function CheckoutPage() {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration-safe mount flag for persisted zustand store
   useEffect(() => setMounted(true), []);
 
+  useEffect(() => {
+    fetch("/api/account/profile")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((profile) => {
+        if (!profile) return;
+        setName((prev) => prev || profile.name || "");
+        setPhone((prev) => prev || profile.phone || "");
+        setAddress((prev) => prev || profile.address || "");
+      })
+      .catch(() => {});
+  }, []);
+
   const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   async function handleSubmit(e: React.FormEvent) {

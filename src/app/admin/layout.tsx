@@ -8,6 +8,7 @@ const NAV = [
   { href: "/admin/shops", label: "Gian hàng", icon: "🏬" },
   { href: "/admin/products", label: "Sản phẩm", icon: "📦" },
   { href: "/admin/orders", label: "Đơn hàng", icon: "🧾" },
+  { href: "/admin/accounts", label: "Tài khoản Admin", icon: "🔑" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

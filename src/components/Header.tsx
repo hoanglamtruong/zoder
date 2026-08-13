@@ -13,6 +13,7 @@ export default function Header() {
   const [mounted, setMounted] = useState(false);
   const [query, setQuery] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
+  const [customerName, setCustomerName] = useState<string | null>(null);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration-safe mount flag for persisted zustand store
   useEffect(() => setMounted(true), []);
@@ -21,6 +22,10 @@ export default function Header() {
     fetch("/api/categories")
       .then((res) => res.json())
       .then((data) => setCategories(data))
+      .catch(() => {});
+    fetch("/api/auth")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setCustomerName(data?.name ?? null))
       .catch(() => {});
   }, []);
 
@@ -68,6 +73,9 @@ export default function Header() {
                 {count}
               </span>
             )}
+          </Link>
+          <Link href={customerName ? "/account" : "/login"} className="hover:opacity-80">
+            {customerName ? `👤 ${customerName}` : "Đăng nhập"}
           </Link>
         </nav>
       </div>

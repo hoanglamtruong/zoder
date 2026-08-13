@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { getCustomerSession } from "@/lib/customer-auth";
 
 const orderSchema = z.object({
   customerName: z.string().min(1),
@@ -24,6 +25,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const { customerName, customerPhone, customerAddress, items } = parsed.data;
+  const session = await getCustomerSession();
 
   try {
     const order = await prisma.$transaction(async (tx) => {
@@ -77,6 +79,7 @@ export async function POST(request: Request) {
 
       const createdOrder = await tx.order.create({
         data: {
+          customerId: session?.customerId,
           customerName,
           customerPhone,
           customerAddress,
