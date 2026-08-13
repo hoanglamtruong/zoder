@@ -20,11 +20,14 @@ type Product = {
 };
 
 const emptyForm = { shopId: "", name: "", slug: "", description: "", price: "", stock: "" };
+type DraftVariant = { name: string; price: string; stock: string };
+const emptyDraftVariant: DraftVariant = { name: "", price: "", stock: "" };
 
 export default function ProductsPanel() {
   const [products, setProducts] = useState<Product[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
   const [form, setForm] = useState(emptyForm);
+  const [draftVariants, setDraftVariants] = useState<DraftVariant[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -68,7 +71,28 @@ export default function ProductsPanel() {
       setError("Lưu sản phẩm thất bại");
       return;
     }
+
+    if (!editingId) {
+      const created = await res.json();
+      const validVariants = draftVariants.filter((v) => v.name.trim() && Number(v.price) > 0);
+      for (const v of validVariants) {
+        const variantRes = await fetch(`/api/admin/products/${created.id}/variants`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: v.name,
+            price: Number(v.price),
+            stock: Number(v.stock || 0),
+          }),
+        });
+        if (!variantRes.ok) {
+          setError(`Đã tạo sản phẩm nhưng biến thể "${v.name}" bị lỗi (tên trùng?)`);
+        }
+      }
+    }
+
     setForm(emptyForm);
+    setDraftVariants([]);
     setEditingId(null);
     load();
   }
@@ -81,6 +105,7 @@ export default function ProductsPanel() {
 
   function startEdit(product: Product) {
     setEditingId(product.id);
+    setDraftVariants([]);
     setForm({
       shopId: product.shopId,
       name: product.name,
@@ -89,6 +114,14 @@ export default function ProductsPanel() {
       price: String(product.price),
       stock: String(product.stock),
     });
+  }
+
+  function updateDraftVariant(index: number, patch: Partial<DraftVariant>) {
+    setDraftVariants((prev) => prev.map((v, i) => (i === index ? { ...v, ...patch } : v)));
+  }
+
+  function removeDraftVariant(index: number) {
+    setDraftVariants((prev) => prev.filter((_, i) => i !== index));
   }
 
   return (
@@ -153,6 +186,58 @@ export default function ProductsPanel() {
           onChange={(e) => setForm({ ...form, stock: e.target.value })}
           className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
         />
+
+        {!editingId && (
+          <div className="border-t border-neutral-200 pt-3 space-y-2">
+            <p className="text-sm font-medium">Biến thể (tùy chọn)</p>
+            <p className="text-xs text-neutral-400">
+              Vd: Size S / Size M / Size L, mỗi biến thể có giá và tồn kho riêng.
+            </p>
+            {draftVariants.map((v, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <input
+                  placeholder="Tên (vd: Size M)"
+                  value={v.name}
+                  onChange={(e) => updateDraftVariant(i, { name: e.target.value })}
+                  className="flex-1 rounded border border-neutral-300 px-2 py-1.5 text-sm"
+                />
+                <input
+                  type="number"
+                  min={0}
+                  step="1000"
+                  placeholder="Giá"
+                  value={v.price}
+                  onChange={(e) => updateDraftVariant(i, { price: e.target.value })}
+                  className="w-20 rounded border border-neutral-300 px-2 py-1.5 text-sm"
+                />
+                <input
+                  type="number"
+                  min={0}
+                  placeholder="Kho"
+                  value={v.stock}
+                  onChange={(e) => updateDraftVariant(i, { stock: e.target.value })}
+                  className="w-16 rounded border border-neutral-300 px-2 py-1.5 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeDraftVariant(i)}
+                  className="text-red-500 text-sm px-1"
+                  aria-label="Xóa dòng"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => setDraftVariants((prev) => [...prev, { ...emptyDraftVariant }])}
+              className="text-sm text-brand hover:underline"
+            >
+              + Thêm dòng biến thể
+            </button>
+          </div>
+        )}
+
         {error && <p className="text-sm text-red-500">{error}</p>}
         <div className="flex gap-2">
           <button type="submit" className="rounded-lg bg-brand text-white px-4 py-2 text-sm font-medium hover:bg-brand-dark transition-colors">
@@ -164,6 +249,7 @@ export default function ProductsPanel() {
               onClick={() => {
                 setEditingId(null);
                 setForm(emptyForm);
+                setDraftVariants([]);
               }}
               className="rounded-lg border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50"
             >
