@@ -12,7 +12,7 @@ export default async function SearchPage({
   const products = query
     ? await prisma.product.findMany({
         where: { name: { contains: query, mode: "insensitive" } },
-        include: { shop: true },
+        include: { shop: true, variants: true },
         orderBy: { createdAt: "desc" },
       })
     : [];
@@ -43,6 +43,7 @@ export default async function SearchPage({
               price: Number(p.price),
               stock: p.stock,
               createdAt: p.createdAt,
+              variants: p.variants.map((v) => ({ price: Number(v.price), stock: v.stock })),
             }}
             shopName={p.shop.name}
           />

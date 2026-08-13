@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { formatVND } from "@/lib/format";
 import Badge from "@/components/Badge";
+import ProductVariantsEditor from "@/components/admin/ProductVariantsEditor";
 
 type Shop = { id: string; name: string };
+type Variant = { id: string; name: string; price: string; stock: number };
 type Product = {
   id: string;
   shopId: string;
@@ -14,6 +16,7 @@ type Product = {
   description: string | null;
   price: string;
   stock: number;
+  variants: Variant[];
 };
 
 const emptyForm = { shopId: "", name: "", slug: "", description: "", price: "", stock: "" };
@@ -23,6 +26,7 @@ export default function ProductsPanel() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -125,21 +129,26 @@ export default function ProductsPanel() {
           className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
           rows={2}
         />
+        <div>
+          <input
+            required
+            type="number"
+            min={0}
+            step="1000"
+            placeholder="Giá mặc định (VNĐ)"
+            value={form.price}
+            onChange={(e) => setForm({ ...form, price: e.target.value })}
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
+          />
+          <p className="text-xs text-neutral-400 mt-1">
+            Dùng khi sản phẩm không có biến thể. Nếu có biến thể, giá từng biến thể sẽ được ưu tiên.
+          </p>
+        </div>
         <input
           required
           type="number"
           min={0}
-          step="1000"
-          placeholder="Giá (VNĐ)"
-          value={form.price}
-          onChange={(e) => setForm({ ...form, price: e.target.value })}
-          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
-        />
-        <input
-          required
-          type="number"
-          min={0}
-          placeholder="Tồn kho"
+          placeholder="Tồn kho mặc định"
           value={form.stock}
           onChange={(e) => setForm({ ...form, stock: e.target.value })}
           className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
@@ -177,34 +186,74 @@ export default function ProductsPanel() {
                 <th className="px-4 py-3 font-medium">Gian hàng</th>
                 <th className="px-4 py-3 font-medium">Giá</th>
                 <th className="px-4 py-3 font-medium">Tồn kho</th>
+                <th className="px-4 py-3 font-medium">Biến thể</th>
                 <th className="px-4 py-3 font-medium text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
-              {products.map((product) => (
-                <tr key={product.id} className="hover:bg-neutral-50">
-                  <td className="px-4 py-3 font-medium">{product.name}</td>
-                  <td className="px-4 py-3 text-neutral-600">{product.shop.name}</td>
-                  <td className="px-4 py-3 text-brand font-semibold">{formatVND(Number(product.price))}</td>
-                  <td className="px-4 py-3">
-                    {product.stock === 0 ? (
-                      <Badge variant="out">Hết hàng</Badge>
-                    ) : product.stock <= 5 ? (
-                      <Badge variant="low">{product.stock} còn lại</Badge>
-                    ) : (
-                      <span className="text-neutral-600">{product.stock}</span>
+              {products.map((product) => {
+                const hasVariants = product.variants.length > 0;
+                const stock = hasVariants
+                  ? product.variants.reduce((sum, v) => sum + v.stock, 0)
+                  : product.stock;
+                const expanded = expandedId === product.id;
+
+                return (
+                  <Fragment key={product.id}>
+                    <tr className="hover:bg-neutral-50">
+                      <td className="px-4 py-3 font-medium">{product.name}</td>
+                      <td className="px-4 py-3 text-neutral-600">{product.shop.name}</td>
+                      <td className="px-4 py-3 text-brand font-semibold">
+                        {hasVariants ? (
+                          <>
+                            {formatVND(Math.min(...product.variants.map((v) => Number(v.price))))}
+                            {" – "}
+                            {formatVND(Math.max(...product.variants.map((v) => Number(v.price))))}
+                          </>
+                        ) : (
+                          formatVND(Number(product.price))
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {stock === 0 ? (
+                          <Badge variant="out">Hết hàng</Badge>
+                        ) : stock <= 5 ? (
+                          <Badge variant="low">{stock} còn lại</Badge>
+                        ) : (
+                          <span className="text-neutral-600">{stock}</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => setExpandedId(expanded ? null : product.id)}
+                          className="text-brand hover:underline"
+                        >
+                          {hasVariants ? `${product.variants.length} loại` : "Thêm biến thể"}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 text-right space-x-3">
+                        <button onClick={() => startEdit(product)} className="text-brand hover:underline">
+                          Sửa
+                        </button>
+                        <button onClick={() => handleDelete(product.id)} className="text-red-500 hover:underline">
+                          Xóa
+                        </button>
+                      </td>
+                    </tr>
+                    {expanded && (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-3">
+                          <ProductVariantsEditor
+                            productId={product.id}
+                            variants={product.variants}
+                            onChanged={load}
+                          />
+                        </td>
+                      </tr>
                     )}
-                  </td>
-                  <td className="px-4 py-3 text-right space-x-3">
-                    <button onClick={() => startEdit(product)} className="text-brand hover:underline">
-                      Sửa
-                    </button>
-                    <button onClick={() => handleDelete(product.id)} className="text-red-500 hover:underline">
-                      Xóa
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         )}

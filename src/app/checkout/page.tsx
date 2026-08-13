@@ -33,7 +33,11 @@ export default function CheckoutPage() {
           customerName: name,
           customerPhone: phone,
           customerAddress: address,
-          items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+          items: items.map((i) => ({
+            productId: i.productId,
+            variantId: i.variantId ?? undefined,
+            quantity: i.quantity,
+          })),
         }),
       });
       if (!res.ok) {
@@ -128,9 +132,10 @@ export default function CheckoutPage() {
             <h2 className="font-semibold">Đơn hàng</h2>
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {items.map((item) => (
-                <div key={item.productId} className="flex justify-between text-sm">
+                <div key={item.lineId} className="flex justify-between text-sm">
                   <span className="text-neutral-600 line-clamp-1 pr-2">
-                    {item.name} × {item.quantity}
+                    {item.name}
+                    {item.variantName && ` (${item.variantName})`} × {item.quantity}
                   </span>
                   <span className="font-medium shrink-0">{formatVND(item.price * item.quantity)}</span>
                 </div>

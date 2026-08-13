@@ -53,23 +53,26 @@ export default function CartPage() {
               </div>
               <div className="divide-y divide-neutral-100">
                 {group.items.map((item) => (
-                  <div key={item.productId} className="flex items-center gap-4 p-4">
+                  <div key={item.lineId} className="flex items-center gap-4 p-4">
                     <PlaceholderThumb label={item.name} className="h-16 w-16 rounded-lg shrink-0" />
                     <div className="flex-1 min-w-0">
                       <Link href={`/products/${item.slug}`} className="font-medium hover:text-brand line-clamp-1">
                         {item.name}
                       </Link>
+                      {item.variantName && (
+                        <p className="text-xs text-neutral-400 mt-0.5">Phân loại: {item.variantName}</p>
+                      )}
                       <p className="text-sm text-brand font-semibold mt-1">{formatVND(item.price)}</p>
                     </div>
                     <QuantityStepper
                       value={item.quantity}
-                      onChange={(q) => setQuantity(item.productId, q)}
+                      onChange={(q) => setQuantity(item.lineId, q)}
                     />
                     <p className="w-28 text-right font-semibold hidden sm:block">
                       {formatVND(item.price * item.quantity)}
                     </p>
                     <button
-                      onClick={() => removeItem(item.productId)}
+                      onClick={() => removeItem(item.lineId)}
                       className="text-neutral-400 hover:text-red-500 transition-colors"
                       aria-label="Xóa"
                     >

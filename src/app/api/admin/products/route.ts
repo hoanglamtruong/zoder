@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   const shopId = searchParams.get("shopId") ?? undefined;
   const products = await prisma.product.findMany({
     where: shopId ? { shopId } : undefined,
-    include: { shop: true },
+    include: { shop: true, variants: { orderBy: { createdAt: "asc" } } },
     orderBy: { createdAt: "desc" },
   });
   return NextResponse.json(products);

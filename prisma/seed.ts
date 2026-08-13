@@ -44,7 +44,7 @@ async function main() {
     },
   });
 
-  await prisma.product.upsert({
+  const vayHoa = await prisma.product.upsert({
     where: { slug: "vay-hoa-mua-he" },
     update: {},
     create: {
@@ -56,6 +56,18 @@ async function main() {
       stock: 50,
     },
   });
+
+  for (const variant of [
+    { name: "Size S", price: 259000, stock: 20 },
+    { name: "Size M", price: 269000, stock: 20 },
+    { name: "Size L", price: 279000, stock: 10 },
+  ]) {
+    await prisma.productVariant.upsert({
+      where: { productId_name: { productId: vayHoa.id, name: variant.name } },
+      update: {},
+      create: { productId: vayHoa.id, ...variant },
+    });
+  }
 
   await prisma.product.upsert({
     where: { slug: "ao-so-mi-lua" },

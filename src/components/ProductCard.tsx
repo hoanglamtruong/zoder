@@ -20,9 +20,18 @@ export default function ProductCard({
     price: number;
     stock: number;
     createdAt: string | Date;
+    variants?: { price: number; stock: number }[];
   };
   shopName?: string;
 }) {
+  const hasVariants = (product.variants?.length ?? 0) > 0;
+  const prices = hasVariants ? product.variants!.map((v) => v.price) : [product.price];
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+  const stock = hasVariants
+    ? product.variants!.reduce((sum, v) => sum + v.stock, 0)
+    : product.stock;
+
   return (
     <Link
       href={`/products/${product.slug}`}
@@ -32,8 +41,8 @@ export default function ProductCard({
         <PlaceholderThumb label={product.name} className="h-full w-full text-4xl" />
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {isNew(product.createdAt) && <Badge variant="new">Mới</Badge>}
-          {product.stock === 0 && <Badge variant="out">Hết hàng</Badge>}
-          {product.stock > 0 && product.stock <= 5 && <Badge variant="low">Sắp hết</Badge>}
+          {stock === 0 && <Badge variant="out">Hết hàng</Badge>}
+          {stock > 0 && stock <= 5 && <Badge variant="low">Sắp hết</Badge>}
         </div>
       </div>
       <div className="p-3 space-y-1">
@@ -41,7 +50,9 @@ export default function ProductCard({
         <h3 className="text-sm font-medium leading-snug line-clamp-2 group-hover:text-brand transition-colors">
           {product.name}
         </h3>
-        <p className="text-brand font-bold">{formatVND(product.price)}</p>
+        <p className="text-brand font-bold">
+          {minPrice === maxPrice ? formatVND(minPrice) : <>Từ {formatVND(minPrice)}</>}
+        </p>
       </div>
     </Link>
   );

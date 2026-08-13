@@ -11,7 +11,7 @@ export async function GET(request: Request) {
       shopId,
       name: q ? { contains: q, mode: "insensitive" } : undefined,
     },
-    include: { shop: true },
+    include: { shop: true, variants: true },
     orderBy: { createdAt: "desc" },
   });
   return NextResponse.json(products);

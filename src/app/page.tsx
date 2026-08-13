@@ -14,7 +14,7 @@ export default async function HomePage() {
       take: 6,
     }),
     prisma.product.findMany({
-      include: { shop: true },
+      include: { shop: true, variants: true },
       orderBy: { createdAt: "desc" },
       take: 10,
     }),
@@ -89,6 +89,7 @@ export default async function HomePage() {
                     price: Number(p.price),
                     stock: p.stock,
                     createdAt: p.createdAt,
+                    variants: p.variants.map((v) => ({ price: Number(v.price), stock: v.stock })),
                   }}
                   shopName={p.shop.name}
                 />

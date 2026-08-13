@@ -9,7 +9,10 @@ export default async function ShopPage({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const shop = await prisma.shop.findUnique({
     where: { slug },
-    include: { category: true, products: { orderBy: { createdAt: "desc" } } },
+    include: {
+      category: true,
+      products: { orderBy: { createdAt: "desc" }, include: { variants: true } },
+    },
   });
 
   if (!shop) notFound();
@@ -47,6 +50,7 @@ export default async function ShopPage({ params }: { params: Promise<{ slug: str
                   price: Number(p.price),
                   stock: p.stock,
                   createdAt: p.createdAt,
+                  variants: p.variants.map((v) => ({ price: Number(v.price), stock: v.stock })),
                 }}
               />
             ))}

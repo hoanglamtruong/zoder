@@ -9,6 +9,7 @@ type OrderItem = {
   quantity: number;
   priceAtOrder: string;
   product: { name: string };
+  variant: { name: string } | null;
   shop: { name: string };
 };
 
@@ -93,7 +94,9 @@ export default function OrdersPanel() {
           <div className="mt-3 border-t border-neutral-100 pt-3 space-y-1">
             {order.items.map((item) => (
               <p key={item.id} className="text-sm text-neutral-600">
-                {item.product.name} ({item.shop.name}) × {item.quantity} — {formatVND(Number(item.priceAtOrder) * item.quantity)}
+                {item.product.name}
+                {item.variant && ` (${item.variant.name})`} ({item.shop.name}) × {item.quantity} —{" "}
+                {formatVND(Number(item.priceAtOrder) * item.quantity)}
               </p>
             ))}
           </div>

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { formatVND } from "@/lib/format";
 import PlaceholderThumb from "@/components/PlaceholderThumb";
 import Badge from "@/components/Badge";
 import AddToCartButton from "@/components/AddToCartButton";
@@ -12,10 +11,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const product = await prisma.product.findUnique({
     where: { slug },
-    include: { shop: true },
+    include: { shop: true, variants: { orderBy: { createdAt: "asc" } } },
   });
 
   if (!product) notFound();
+
+  const hasVariants = product.variants.length > 0;
+  const totalStock = hasVariants
+    ? product.variants.reduce((sum, v) => sum + v.stock, 0)
+    : product.stock;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -36,18 +40,13 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         <div className="p-8 space-y-4">
           <div className="flex items-center gap-2">
-            {product.stock === 0 && <Badge variant="out">Hết hàng</Badge>}
-            {product.stock > 0 && product.stock <= 5 && <Badge variant="low">Sắp hết hàng</Badge>}
+            {totalStock === 0 && <Badge variant="out">Hết hàng</Badge>}
+            {totalStock > 0 && totalStock <= 5 && <Badge variant="low">Sắp hết hàng</Badge>}
           </div>
 
           <h1 className="text-2xl font-bold">{product.name}</h1>
-          <p className="text-3xl font-extrabold text-brand">{formatVND(Number(product.price))}</p>
 
           {product.description && <p className="text-neutral-600">{product.description}</p>}
-
-          <p className="text-sm text-neutral-400">
-            {product.stock > 0 ? `Còn ${product.stock} sản phẩm` : "Tạm hết hàng"}
-          </p>
 
           <div className="pt-2">
             <AddToCartButton
@@ -55,12 +54,18 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 id: product.id,
                 name: product.name,
                 slug: product.slug,
-                price: Number(product.price),
                 imageUrl: product.imageUrl,
                 shopId: product.shopId,
                 shopName: product.shop.name,
-                stock: product.stock,
               }}
+              basePrice={Number(product.price)}
+              baseStock={product.stock}
+              variants={product.variants.map((v) => ({
+                id: v.id,
+                name: v.name,
+                price: Number(v.price),
+                stock: v.stock,
+              }))}
             />
           </div>
         </div>
