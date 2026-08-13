@@ -8,7 +8,8 @@ const productUpdateSchema = z.object({
   slug: z.string().min(1).optional(),
   description: z.string().optional(),
   price: z.number().positive().optional(),
-  imageUrl: z.string().optional(),
+  imageUrl: z.string().nullable().optional(),
+  videoUrl: z.string().nullable().optional(),
   stock: z.number().int().min(0).optional(),
 });
 

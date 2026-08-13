@@ -4,6 +4,7 @@ import { Fragment, useEffect, useState } from "react";
 import { formatVND } from "@/lib/format";
 import Badge from "@/components/Badge";
 import ProductVariantsEditor from "@/components/admin/ProductVariantsEditor";
+import MediaUploadField from "@/components/admin/MediaUploadField";
 
 type Shop = { id: string; name: string };
 type Variant = { id: string; name: string; price: string; stock: number };
@@ -15,11 +16,22 @@ type Product = {
   slug: string;
   description: string | null;
   price: string;
+  imageUrl: string | null;
+  videoUrl: string | null;
   stock: number;
   variants: Variant[];
 };
 
-const emptyForm = { shopId: "", name: "", slug: "", description: "", price: "", stock: "" };
+const emptyForm = {
+  shopId: "",
+  name: "",
+  slug: "",
+  description: "",
+  price: "",
+  stock: "",
+  imageUrl: "",
+  videoUrl: "",
+};
 type DraftVariant = { name: string; price: string; stock: string };
 const emptyDraftVariant: DraftVariant = { name: "", price: "", stock: "" };
 
@@ -59,6 +71,8 @@ export default function ProductsPanel() {
       description: form.description || undefined,
       price: Number(form.price),
       stock: Number(form.stock || 0),
+      imageUrl: form.imageUrl || null,
+      videoUrl: form.videoUrl || null,
     };
     const url = editingId ? `/api/admin/products/${editingId}` : "/api/admin/products";
     const method = editingId ? "PUT" : "POST";
@@ -113,6 +127,8 @@ export default function ProductsPanel() {
       description: product.description ?? "",
       price: String(product.price),
       stock: String(product.stock),
+      imageUrl: product.imageUrl ?? "",
+      videoUrl: product.videoUrl ?? "",
     });
   }
 
@@ -186,6 +202,21 @@ export default function ProductsPanel() {
           onChange={(e) => setForm({ ...form, stock: e.target.value })}
           className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
         />
+
+        <div className="border-t border-neutral-200 pt-3 space-y-3">
+          <MediaUploadField
+            label="Hình ảnh sản phẩm"
+            kind="image"
+            value={form.imageUrl}
+            onChange={(url) => setForm({ ...form, imageUrl: url })}
+          />
+          <MediaUploadField
+            label="Video sản phẩm"
+            kind="video"
+            value={form.videoUrl}
+            onChange={(url) => setForm({ ...form, videoUrl: url })}
+          />
+        </div>
 
         {!editingId && (
           <div className="border-t border-neutral-200 pt-3 space-y-2">
@@ -268,6 +299,7 @@ export default function ProductsPanel() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-neutral-50 text-left text-neutral-500 border-b border-neutral-200">
+                <th className="px-4 py-3 font-medium"></th>
                 <th className="px-4 py-3 font-medium">Sản phẩm</th>
                 <th className="px-4 py-3 font-medium">Gian hàng</th>
                 <th className="px-4 py-3 font-medium">Giá</th>
@@ -287,6 +319,18 @@ export default function ProductsPanel() {
                 return (
                   <Fragment key={product.id}>
                     <tr className="hover:bg-neutral-50">
+                      <td className="px-4 py-3">
+                        {product.imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element -- MinIO-proxied upload, not optimizable by next/image
+                          <img
+                            src={product.imageUrl}
+                            alt=""
+                            className="h-10 w-10 rounded-lg object-cover border border-neutral-200"
+                          />
+                        ) : (
+                          <div className="h-10 w-10 rounded-lg bg-neutral-100" />
+                        )}
+                      </td>
                       <td className="px-4 py-3 font-medium">{product.name}</td>
                       <td className="px-4 py-3 text-neutral-600">{product.shop.name}</td>
                       <td className="px-4 py-3 text-brand font-semibold">
@@ -328,7 +372,7 @@ export default function ProductsPanel() {
                     </tr>
                     {expanded && (
                       <tr>
-                        <td colSpan={6} className="px-4 py-3">
+                        <td colSpan={7} className="px-4 py-3">
                           <ProductVariantsEditor
                             productId={product.id}
                             variants={product.variants}

@@ -8,7 +8,8 @@ const productSchema = z.object({
   slug: z.string().min(1),
   description: z.string().optional(),
   price: z.number().positive(),
-  imageUrl: z.string().optional(),
+  imageUrl: z.string().nullable().optional(),
+  videoUrl: z.string().nullable().optional(),
   stock: z.number().int().min(0).default(0),
 });
 

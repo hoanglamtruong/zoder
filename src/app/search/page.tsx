@@ -42,6 +42,7 @@ export default async function SearchPage({
               name: p.name,
               price: Number(p.price),
               stock: p.stock,
+              imageUrl: p.imageUrl,
               createdAt: p.createdAt,
               variants: p.variants.map((v) => ({ price: Number(v.price), stock: v.stock })),
             }}

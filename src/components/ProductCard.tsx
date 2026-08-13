@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import PlaceholderThumb from "@/components/PlaceholderThumb";
 import Badge from "@/components/Badge";
 import { formatVND } from "@/lib/format";
@@ -19,6 +20,7 @@ export default function ProductCard({
     name: string;
     price: number;
     stock: number;
+    imageUrl?: string | null;
     createdAt: string | Date;
     variants?: { price: number; stock: number }[];
   };
@@ -38,7 +40,17 @@ export default function ProductCard({
       className="group rounded-xl border border-neutral-200 bg-white overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all"
     >
       <div className="relative aspect-square">
-        <PlaceholderThumb label={product.name} className="h-full w-full text-4xl" />
+        {product.imageUrl ? (
+          <Image
+            src={product.imageUrl}
+            alt={product.name}
+            fill
+            sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+            className="object-cover"
+          />
+        ) : (
+          <PlaceholderThumb label={product.name} className="h-full w-full text-4xl" />
+        )}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {isNew(product.createdAt) && <Badge variant="new">Mới</Badge>}
           {stock === 0 && <Badge variant="out">Hết hàng</Badge>}

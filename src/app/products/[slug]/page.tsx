@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import PlaceholderThumb from "@/components/PlaceholderThumb";
@@ -36,7 +37,25 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       </nav>
 
       <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden grid grid-cols-1 md:grid-cols-2">
-        <PlaceholderThumb label={product.name} className="aspect-square text-7xl" />
+        <div className="space-y-2 p-2">
+          <div className="relative aspect-square rounded-lg overflow-hidden">
+            {product.imageUrl ? (
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                fill
+                sizes="(min-width: 768px) 40vw, 90vw"
+                className="object-cover"
+                priority
+              />
+            ) : (
+              <PlaceholderThumb label={product.name} className="h-full w-full text-7xl" />
+            )}
+          </div>
+          {product.videoUrl && (
+            <video src={product.videoUrl} controls className="w-full rounded-lg" />
+          )}
+        </div>
 
         <div className="p-8 space-y-4">
           <div className="flex items-center gap-2">
