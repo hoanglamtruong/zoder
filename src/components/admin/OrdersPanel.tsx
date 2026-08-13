@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatVND } from "@/lib/format";
+import Badge, { type BadgeVariant } from "@/components/Badge";
 
 type OrderItem = {
   id: string;
@@ -23,6 +24,13 @@ type Order = {
 };
 
 const STATUSES = ["pending", "confirmed", "shipped", "completed", "cancelled"];
+const STATUS_LABEL: Record<string, string> = {
+  pending: "Chờ xử lý",
+  confirmed: "Đã xác nhận",
+  shipped: "Đang giao",
+  completed: "Hoàn tất",
+  cancelled: "Đã hủy",
+};
 
 export default function OrdersPanel() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -58,22 +66,25 @@ export default function OrdersPanel() {
         <div key={order.id} className="rounded-xl border border-neutral-200 bg-white p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="font-semibold">{order.customerName}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-semibold">{order.customerName}</p>
+                <Badge variant={order.status as BadgeVariant}>{STATUS_LABEL[order.status]}</Badge>
+              </div>
               <p className="text-sm text-neutral-500">{order.customerPhone} · {order.customerAddress}</p>
               <p className="text-xs text-neutral-400 mt-1">
                 {new Date(order.createdAt).toLocaleString("vi-VN")}
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <span className="font-bold">{formatVND(Number(order.totalAmount))}</span>
+              <span className="font-bold text-brand">{formatVND(Number(order.totalAmount))}</span>
               <select
                 value={order.status}
                 onChange={(e) => updateStatus(order.id, e.target.value)}
-                className="rounded border border-neutral-300 px-2 py-1 text-sm"
+                className="rounded-lg border border-neutral-300 px-2 py-1.5 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
               >
                 {STATUSES.map((s) => (
                   <option key={s} value={s}>
-                    {s}
+                    {STATUS_LABEL[s]}
                   </option>
                 ))}
               </select>

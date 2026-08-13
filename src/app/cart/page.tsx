@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCartStore } from "@/lib/cart-store";
 import { formatVND } from "@/lib/format";
+import PlaceholderThumb from "@/components/PlaceholderThumb";
+import QuantityStepper from "@/components/QuantityStepper";
 
 export default function CartPage() {
   const items = useCartStore((s) => s.items);
@@ -28,43 +30,50 @@ export default function CartPage() {
   );
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <h1 className="text-2xl font-bold mb-6">Giỏ hàng</h1>
+    <div className="mx-auto max-w-4xl px-4 py-8">
+      <h1 className="text-xl font-bold mb-6">Giỏ hàng ({items.reduce((s, i) => s + i.quantity, 0)})</h1>
 
       {items.length === 0 ? (
-        <div className="text-center py-16 text-neutral-500">
-          <p>Giỏ hàng đang trống.</p>
-          <Link href="/" className="mt-4 inline-block text-neutral-900 underline">
+        <div className="text-center py-20 rounded-xl border border-dashed border-neutral-300 bg-white">
+          <p className="text-4xl mb-3">🛒</p>
+          <p className="text-neutral-500">Giỏ hàng đang trống.</p>
+          <Link
+            href="/"
+            className="mt-4 inline-block rounded-lg bg-brand px-5 py-2 text-white font-medium hover:bg-brand-dark transition-colors"
+          >
             Tiếp tục mua sắm
           </Link>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-5">
           {Object.entries(byShop).map(([shopId, group]) => (
-            <div key={shopId} className="rounded-xl border border-neutral-200 bg-white p-5">
-              <h2 className="font-semibold mb-3">{group.shopName}</h2>
-              <div className="space-y-3">
+            <div key={shopId} className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+              <div className="bg-neutral-50 px-5 py-3 font-semibold text-sm border-b border-neutral-200">
+                🏬 {group.shopName}
+              </div>
+              <div className="divide-y divide-neutral-100">
                 {group.items.map((item) => (
-                  <div key={item.productId} className="flex items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <Link href={`/products/${item.slug}`} className="hover:underline">
+                  <div key={item.productId} className="flex items-center gap-4 p-4">
+                    <PlaceholderThumb label={item.name} className="h-16 w-16 rounded-lg shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <Link href={`/products/${item.slug}`} className="font-medium hover:text-brand line-clamp-1">
                         {item.name}
                       </Link>
-                      <p className="text-sm text-neutral-500">{formatVND(item.price)}</p>
+                      <p className="text-sm text-brand font-semibold mt-1">{formatVND(item.price)}</p>
                     </div>
-                    <input
-                      type="number"
-                      min={1}
+                    <QuantityStepper
                       value={item.quantity}
-                      onChange={(e) => setQuantity(item.productId, Number(e.target.value))}
-                      className="w-16 rounded border border-neutral-300 px-2 py-1 text-center"
+                      onChange={(q) => setQuantity(item.productId, q)}
                     />
-                    <p className="w-28 text-right font-medium">{formatVND(item.price * item.quantity)}</p>
+                    <p className="w-28 text-right font-semibold hidden sm:block">
+                      {formatVND(item.price * item.quantity)}
+                    </p>
                     <button
                       onClick={() => removeItem(item.productId)}
-                      className="text-sm text-red-500 hover:underline"
+                      className="text-neutral-400 hover:text-red-500 transition-colors"
+                      aria-label="Xóa"
                     >
-                      Xóa
+                      ✕
                     </button>
                   </div>
                 ))}
@@ -72,17 +81,18 @@ export default function CartPage() {
             </div>
           ))}
 
-          <div className="flex items-center justify-between rounded-xl border border-neutral-200 bg-white p-5">
-            <p className="text-lg font-semibold">Tổng cộng</p>
-            <p className="text-xl font-bold">{formatVND(total)}</p>
+          <div className="sticky bottom-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-lg flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-neutral-500">Tổng cộng</p>
+              <p className="text-2xl font-extrabold text-brand">{formatVND(total)}</p>
+            </div>
+            <Link
+              href="/checkout"
+              className="rounded-lg bg-brand px-8 py-3 text-white font-semibold hover:bg-brand-dark transition-colors"
+            >
+              Thanh toán
+            </Link>
           </div>
-
-          <Link
-            href="/checkout"
-            className="block w-full rounded-lg bg-neutral-900 px-6 py-3 text-center text-white hover:bg-neutral-700 transition-colors"
-          >
-            Tiến hành thanh toán
-          </Link>
         </div>
       )}
     </div>

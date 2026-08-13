@@ -54,70 +54,103 @@ export default function CheckoutPage() {
 
   if (orderId) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold mb-3">Đặt hàng thành công!</h1>
-        <p className="text-neutral-600">Mã đơn hàng: {orderId}</p>
-        <p className="text-neutral-500 mt-2">Chúng tôi sẽ liên hệ bạn để xác nhận (thanh toán COD / thoả thuận).</p>
+      <div className="mx-auto max-w-2xl px-4 py-20 text-center">
+        <p className="text-5xl mb-4">🎉</p>
+        <h1 className="text-2xl font-bold mb-2">Đặt hàng thành công!</h1>
+        <p className="text-neutral-500">
+          Mã đơn hàng: <span className="font-mono text-neutral-700">{orderId}</span>
+        </p>
+        <p className="text-neutral-500 mt-2">
+          Chúng tôi sẽ liên hệ bạn để xác nhận (thanh toán COD / thoả thuận).
+        </p>
       </div>
     );
   }
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16 text-center text-neutral-500">
+      <div className="mx-auto max-w-2xl px-4 py-20 text-center text-neutral-500">
         Giỏ hàng trống. Không thể thanh toán.
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="text-2xl font-bold mb-6">Thanh toán</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Họ và tên</label>
-          <input
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Số điện thoại</label>
-          <input
-            required
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Địa chỉ</label>
-          <textarea
-            required
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2"
-            rows={3}
-          />
-        </div>
+    <div className="mx-auto max-w-4xl px-4 py-8">
+      <h1 className="text-xl font-bold mb-6">Thanh toán</h1>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <form id="checkout-form" onSubmit={handleSubmit} className="md:col-span-2 space-y-4">
+          <div className="rounded-xl border border-neutral-200 bg-white p-5 space-y-4">
+            <h2 className="font-semibold">Thông tin nhận hàng</h2>
+            <div>
+              <label className="block text-sm font-medium mb-1">Họ và tên</label>
+              <input
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:border-brand focus:ring-1 focus:ring-brand outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Số điện thoại</label>
+              <input
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:border-brand focus:ring-1 focus:ring-brand outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Địa chỉ</label>
+              <textarea
+                required
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 focus:border-brand focus:ring-1 focus:ring-brand outline-none"
+                rows={3}
+              />
+            </div>
+          </div>
 
-        <div className="rounded-lg border border-neutral-200 bg-white p-4 flex items-center justify-between">
-          <span className="font-medium">Tổng cộng</span>
-          <span className="text-lg font-bold">{formatVND(total)}</span>
+          {error && <p className="text-sm text-red-500">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full md:hidden rounded-lg bg-brand px-6 py-3 text-white font-semibold hover:bg-brand-dark transition-colors disabled:opacity-50"
+          >
+            {submitting ? "Đang xử lý..." : `Đặt hàng · ${formatVND(total)}`}
+          </button>
+        </form>
+
+        <div className="md:col-span-1">
+          <div className="sticky top-24 rounded-xl border border-neutral-200 bg-white p-5 space-y-3">
+            <h2 className="font-semibold">Đơn hàng</h2>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {items.map((item) => (
+                <div key={item.productId} className="flex justify-between text-sm">
+                  <span className="text-neutral-600 line-clamp-1 pr-2">
+                    {item.name} × {item.quantity}
+                  </span>
+                  <span className="font-medium shrink-0">{formatVND(item.price * item.quantity)}</span>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-neutral-200 pt-3 flex items-center justify-between">
+              <span className="font-semibold">Tổng cộng</span>
+              <span className="text-xl font-extrabold text-brand">{formatVND(total)}</span>
+            </div>
+            <button
+              type="submit"
+              form="checkout-form"
+              disabled={submitting}
+              className="hidden md:block w-full rounded-lg bg-brand px-6 py-3 text-white font-semibold hover:bg-brand-dark transition-colors disabled:opacity-50"
+            >
+              {submitting ? "Đang xử lý..." : "Đặt hàng"}
+            </button>
+          </div>
         </div>
-
-        {error && <p className="text-sm text-red-500">{error}</p>}
-
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-lg bg-neutral-900 px-6 py-3 text-white hover:bg-neutral-700 transition-colors disabled:opacity-50"
-        >
-          {submitting ? "Đang xử lý..." : "Đặt hàng"}
-        </button>
-      </form>
+      </div>
     </div>
   );
 }

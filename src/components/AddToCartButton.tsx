@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/lib/cart-store";
+import QuantityStepper from "@/components/QuantityStepper";
 
 export default function AddToCartButton({
   product,
@@ -19,6 +20,7 @@ export default function AddToCartButton({
   };
 }) {
   const addItem = useCartStore((s) => s.addItem);
+  const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const router = useRouter();
 
@@ -30,43 +32,48 @@ export default function AddToCartButton({
     );
   }
 
+  function addToCart() {
+    addItem(
+      {
+        productId: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: product.price,
+        imageUrl: product.imageUrl,
+        shopId: product.shopId,
+        shopName: product.shopName,
+      },
+      qty
+    );
+  }
+
   return (
-    <div className="flex gap-3">
-      <button
-        onClick={() => {
-          addItem({
-            productId: product.id,
-            name: product.name,
-            slug: product.slug,
-            price: product.price,
-            imageUrl: product.imageUrl,
-            shopId: product.shopId,
-            shopName: product.shopName,
-          });
-          setAdded(true);
-          setTimeout(() => setAdded(false), 1500);
-        }}
-        className="rounded-lg bg-neutral-900 px-6 py-3 text-white hover:bg-neutral-700 transition-colors"
-      >
-        {added ? "Đã thêm ✓" : "Thêm vào giỏ"}
-      </button>
-      <button
-        onClick={() => {
-          addItem({
-            productId: product.id,
-            name: product.name,
-            slug: product.slug,
-            price: product.price,
-            imageUrl: product.imageUrl,
-            shopId: product.shopId,
-            shopName: product.shopName,
-          });
-          router.push("/cart");
-        }}
-        className="rounded-lg border border-neutral-300 px-6 py-3 hover:bg-neutral-100 transition-colors"
-      >
-        Mua ngay
-      </button>
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-neutral-500">Số lượng</span>
+        <QuantityStepper value={qty} onChange={setQty} min={1} max={product.stock} />
+      </div>
+      <div className="flex gap-3">
+        <button
+          onClick={() => {
+            addToCart();
+            setAdded(true);
+            setTimeout(() => setAdded(false), 1500);
+          }}
+          className="rounded-lg border-2 border-brand text-brand px-6 py-3 font-medium hover:bg-brand/5 transition-colors"
+        >
+          {added ? "Đã thêm ✓" : "Thêm vào giỏ"}
+        </button>
+        <button
+          onClick={() => {
+            addToCart();
+            router.push("/cart");
+          }}
+          className="rounded-lg bg-brand px-6 py-3 font-medium text-white hover:bg-brand-dark transition-colors"
+        >
+          Mua ngay
+        </button>
+      </div>
     </div>
   );
 }

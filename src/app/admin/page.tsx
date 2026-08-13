@@ -1,42 +1,63 @@
 "use client";
 
-import { useState } from "react";
-import ShopsPanel from "@/components/admin/ShopsPanel";
-import ProductsPanel from "@/components/admin/ProductsPanel";
-import OrdersPanel from "@/components/admin/OrdersPanel";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
-const TABS = [
-  { id: "shops", label: "Gian hàng" },
-  { id: "products", label: "Sản phẩm" },
-  { id: "orders", label: "Đơn hàng" },
-] as const;
+type Stats = {
+  shops: number;
+  products: number;
+  orders: number;
+  pendingOrders: number;
+};
 
-type TabId = (typeof TABS)[number]["id"];
+export default function AdminOverviewPage() {
+  const [stats, setStats] = useState<Stats | null>(null);
 
-export default function AdminDashboardPage() {
-  const [tab, setTab] = useState<TabId>("shops");
+  useEffect(() => {
+    async function load() {
+      const [shopsRes, productsRes, ordersRes] = await Promise.all([
+        fetch("/api/admin/shops"),
+        fetch("/api/admin/products"),
+        fetch("/api/admin/orders"),
+      ]);
+      const [shops, products, orders] = await Promise.all([
+        shopsRes.json(),
+        productsRes.json(),
+        ordersRes.json(),
+      ]);
+      setStats({
+        shops: shops.length,
+        products: products.length,
+        orders: orders.length,
+        pendingOrders: orders.filter((o: { status: string }) => o.status === "pending").length,
+      });
+    }
+    load();
+  }, []);
+
+  const cards = [
+    { label: "Gian hàng", value: stats?.shops, href: "/admin/shops", icon: "🏬" },
+    { label: "Sản phẩm", value: stats?.products, href: "/admin/products", icon: "📦" },
+    { label: "Tổng đơn hàng", value: stats?.orders, href: "/admin/orders", icon: "🧾" },
+    { label: "Đơn chờ xử lý", value: stats?.pendingOrders, href: "/admin/orders", icon: "⏳" },
+  ];
 
   return (
     <div>
-      <div className="flex gap-2 mb-6 border-b border-neutral-200">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              tab === t.id
-                ? "border-neutral-900 text-neutral-900"
-                : "border-transparent text-neutral-500 hover:text-neutral-700"
-            }`}
+      <h1 className="text-xl font-bold mb-6">Tổng quan</h1>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {cards.map((c) => (
+          <Link
+            key={c.label}
+            href={c.href}
+            className="rounded-xl border border-neutral-200 bg-white p-5 hover:shadow-md transition-shadow"
           >
-            {t.label}
-          </button>
+            <div className="text-2xl">{c.icon}</div>
+            <p className="text-2xl font-extrabold mt-2">{c.value ?? "…"}</p>
+            <p className="text-sm text-neutral-500">{c.label}</p>
+          </Link>
         ))}
       </div>
-
-      {tab === "shops" && <ShopsPanel />}
-      {tab === "products" && <ProductsPanel />}
-      {tab === "orders" && <OrdersPanel />}
     </div>
   );
 }

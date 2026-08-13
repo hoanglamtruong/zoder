@@ -89,26 +89,26 @@ export default function ShopsPanel() {
           placeholder="Tên gian hàng"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
         />
         <input
           required
           placeholder="Slug (vd: shop-abc)"
           value={form.slug}
           onChange={(e) => setForm({ ...form, slug: e.target.value })}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
         />
         <textarea
           placeholder="Mô tả"
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
           rows={3}
         />
         <select
           value={form.categoryId}
           onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
         >
           <option value="">-- Không danh mục --</option>
           {categories.map((c) => (
@@ -119,7 +119,7 @@ export default function ShopsPanel() {
         </select>
         {error && <p className="text-sm text-red-500">{error}</p>}
         <div className="flex gap-2">
-          <button type="submit" className="rounded bg-neutral-900 text-white px-4 py-2 text-sm">
+          <button type="submit" className="rounded-lg bg-brand text-white px-4 py-2 text-sm font-medium hover:bg-brand-dark transition-colors">
             {editingId ? "Cập nhật" : "Tạo mới"}
           </button>
           {editingId && (
@@ -129,7 +129,7 @@ export default function ShopsPanel() {
                 setEditingId(null);
                 setForm(emptyForm);
               }}
-              className="rounded border border-neutral-300 px-4 py-2 text-sm"
+              className="rounded-lg border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50"
             >
               Hủy
             </button>
@@ -137,31 +137,42 @@ export default function ShopsPanel() {
         </div>
       </form>
 
-      <div className="lg:col-span-2 space-y-3">
+      <div className="lg:col-span-2 rounded-xl border border-neutral-200 bg-white overflow-hidden">
         {loading ? (
-          <p className="text-neutral-500">Đang tải...</p>
+          <p className="text-neutral-500 p-5">Đang tải...</p>
         ) : shops.length === 0 ? (
-          <p className="text-neutral-500">Chưa có gian hàng.</p>
+          <p className="text-neutral-500 p-5">Chưa có gian hàng.</p>
         ) : (
-          shops.map((shop) => (
-            <div key={shop.id} className="rounded-xl border border-neutral-200 bg-white p-4 flex items-center justify-between">
-              <div>
-                <p className="font-medium">{shop.name}</p>
-                <p className="text-sm text-neutral-500">
-                  /{shop.slug} · {shop._count.products} sản phẩm
-                  {shop.category ? ` · ${shop.category.name}` : ""}
-                </p>
-              </div>
-              <div className="flex gap-3 text-sm">
-                <button onClick={() => startEdit(shop)} className="text-neutral-700 hover:underline">
-                  Sửa
-                </button>
-                <button onClick={() => handleDelete(shop.id)} className="text-red-500 hover:underline">
-                  Xóa
-                </button>
-              </div>
-            </div>
-          ))
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-neutral-50 text-left text-neutral-500 border-b border-neutral-200">
+                <th className="px-4 py-3 font-medium">Tên</th>
+                <th className="px-4 py-3 font-medium">Danh mục</th>
+                <th className="px-4 py-3 font-medium">Sản phẩm</th>
+                <th className="px-4 py-3 font-medium text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-100">
+              {shops.map((shop) => (
+                <tr key={shop.id} className="hover:bg-neutral-50">
+                  <td className="px-4 py-3">
+                    <p className="font-medium">{shop.name}</p>
+                    <p className="text-neutral-400 text-xs">/{shop.slug}</p>
+                  </td>
+                  <td className="px-4 py-3 text-neutral-600">{shop.category?.name ?? "—"}</td>
+                  <td className="px-4 py-3 text-neutral-600">{shop._count.products}</td>
+                  <td className="px-4 py-3 text-right space-x-3">
+                    <button onClick={() => startEdit(shop)} className="text-brand hover:underline">
+                      Sửa
+                    </button>
+                    <button onClick={() => handleDelete(shop.id)} className="text-red-500 hover:underline">
+                      Xóa
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatVND } from "@/lib/format";
+import Badge from "@/components/Badge";
 
 type Shop = { id: string; name: string };
 type Product = {
@@ -94,7 +95,7 @@ export default function ProductsPanel() {
           required
           value={form.shopId}
           onChange={(e) => setForm({ ...form, shopId: e.target.value })}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
         >
           <option value="">-- Chọn gian hàng --</option>
           {shops.map((s) => (
@@ -108,20 +109,20 @@ export default function ProductsPanel() {
           placeholder="Tên sản phẩm"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
         />
         <input
           required
           placeholder="Slug (vd: san-pham-abc)"
           value={form.slug}
           onChange={(e) => setForm({ ...form, slug: e.target.value })}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
         />
         <textarea
           placeholder="Mô tả"
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
           rows={2}
         />
         <input
@@ -132,7 +133,7 @@ export default function ProductsPanel() {
           placeholder="Giá (VNĐ)"
           value={form.price}
           onChange={(e) => setForm({ ...form, price: e.target.value })}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
         />
         <input
           required
@@ -141,11 +142,11 @@ export default function ProductsPanel() {
           placeholder="Tồn kho"
           value={form.stock}
           onChange={(e) => setForm({ ...form, stock: e.target.value })}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
         />
         {error && <p className="text-sm text-red-500">{error}</p>}
         <div className="flex gap-2">
-          <button type="submit" className="rounded bg-neutral-900 text-white px-4 py-2 text-sm">
+          <button type="submit" className="rounded-lg bg-brand text-white px-4 py-2 text-sm font-medium hover:bg-brand-dark transition-colors">
             {editingId ? "Cập nhật" : "Tạo mới"}
           </button>
           {editingId && (
@@ -155,7 +156,7 @@ export default function ProductsPanel() {
                 setEditingId(null);
                 setForm(emptyForm);
               }}
-              className="rounded border border-neutral-300 px-4 py-2 text-sm"
+              className="rounded-lg border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50"
             >
               Hủy
             </button>
@@ -163,30 +164,49 @@ export default function ProductsPanel() {
         </div>
       </form>
 
-      <div className="lg:col-span-2 space-y-3">
+      <div className="lg:col-span-2 rounded-xl border border-neutral-200 bg-white overflow-hidden">
         {loading ? (
-          <p className="text-neutral-500">Đang tải...</p>
+          <p className="text-neutral-500 p-5">Đang tải...</p>
         ) : products.length === 0 ? (
-          <p className="text-neutral-500">Chưa có sản phẩm.</p>
+          <p className="text-neutral-500 p-5">Chưa có sản phẩm.</p>
         ) : (
-          products.map((product) => (
-            <div key={product.id} className="rounded-xl border border-neutral-200 bg-white p-4 flex items-center justify-between">
-              <div>
-                <p className="font-medium">{product.name}</p>
-                <p className="text-sm text-neutral-500">
-                  {product.shop.name} · {formatVND(Number(product.price))} · tồn {product.stock}
-                </p>
-              </div>
-              <div className="flex gap-3 text-sm">
-                <button onClick={() => startEdit(product)} className="text-neutral-700 hover:underline">
-                  Sửa
-                </button>
-                <button onClick={() => handleDelete(product.id)} className="text-red-500 hover:underline">
-                  Xóa
-                </button>
-              </div>
-            </div>
-          ))
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-neutral-50 text-left text-neutral-500 border-b border-neutral-200">
+                <th className="px-4 py-3 font-medium">Sản phẩm</th>
+                <th className="px-4 py-3 font-medium">Gian hàng</th>
+                <th className="px-4 py-3 font-medium">Giá</th>
+                <th className="px-4 py-3 font-medium">Tồn kho</th>
+                <th className="px-4 py-3 font-medium text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-100">
+              {products.map((product) => (
+                <tr key={product.id} className="hover:bg-neutral-50">
+                  <td className="px-4 py-3 font-medium">{product.name}</td>
+                  <td className="px-4 py-3 text-neutral-600">{product.shop.name}</td>
+                  <td className="px-4 py-3 text-brand font-semibold">{formatVND(Number(product.price))}</td>
+                  <td className="px-4 py-3">
+                    {product.stock === 0 ? (
+                      <Badge variant="out">Hết hàng</Badge>
+                    ) : product.stock <= 5 ? (
+                      <Badge variant="low">{product.stock} còn lại</Badge>
+                    ) : (
+                      <span className="text-neutral-600">{product.stock}</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-right space-x-3">
+                    <button onClick={() => startEdit(product)} className="text-brand hover:underline">
+                      Sửa
+                    </button>
+                    <button onClick={() => handleDelete(product.id)} className="text-red-500 hover:underline">
+                      Xóa
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </div>
